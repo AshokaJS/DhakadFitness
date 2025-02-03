@@ -23,4 +23,14 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 	}
 
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+
 }
