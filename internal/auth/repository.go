@@ -6,26 +6,22 @@ import (
 	"log"
 )
 
-// User struct represents a user
 type User struct {
 	ID       int
+	Username string
 	Email    string
 	Password string
 	Role     string
 }
-
-// AuthRepository defines database operations for authentication
 type AuthRepository interface {
 	CreateUser(username, email, password, role string) error
 	GetUserByEmail(email string) (*User, error)
 }
 
-// AuthRepoImpl is the implementation of AuthRepository
 type AuthRepoImpl struct {
-	DB *sql.DB
+	DB *sql.DB /// ye variable hi hame database se connection provide kr raha hai for insertion etc.
 }
 
-// NewAuthRepository initializes a new repository instance
 func NewAuthRepository(db *sql.DB) AuthRepository {
 	return &AuthRepoImpl{DB: db}
 }
@@ -40,16 +36,16 @@ func (repo *AuthRepoImpl) CreateUser(username, email, password, role string) err
 	return nil
 }
 
-// GetUserByEmail fetches a user by email
 func (repo *AuthRepoImpl) GetUserByEmail(email string) (*User, error) {
-	user := &User{}
-	err := repo.DB.QueryRow("SELECT id, email, password, role FROM users WHERE email = $1", email).
-		Scan(&user.ID, &user.Email, &user.Password, &user.Role)
+	var user User
+	err := repo.DB.QueryRow("SELECT id, name, email, password, role FROM users WHERE email=$1", email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")
 		}
-		return nil, errors.New("failed to fetch user")
+		log.Printf("Failed to get user: %v", err)
+		return nil, errors.New("error retrieving user")
 	}
-	return user, nil
+	return &user, nil
 }

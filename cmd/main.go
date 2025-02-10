@@ -17,11 +17,6 @@ func main() {
 	// Connect to the database
 	db.ConnectDB()
 
-	// Define a simple health check route
-	// http.HandleFunc("/health", dbhandler)
-
-	// authRepo := auth.NewAuthRepository(db1)
-	// auth.AuthService = auth.NewAuthService(authRepo)
 	authRepo := auth.NewAuthRepository(db.DB) // Ensure the db connection is passed correctly
 	authService := auth.NewAuthService(authRepo)
 

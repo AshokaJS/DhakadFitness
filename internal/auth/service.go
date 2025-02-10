@@ -3,22 +3,19 @@ package auth
 import (
 	"errors"
 
-	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// AuthService defines authentication-related business logic
 type AuthService interface {
 	Signup(username, email, password, role string) error
-	Login(email, password string) (string, error)
+	Authenticate(email, role, password string) (*User, error)
 }
 
-// AuthServiceImpl is the implementation of AuthService
 type AuthServiceImpl struct {
 	Repo AuthRepository
 }
 
-// NewAuthService initializes a new service instance
+// constructor hai which initializes a new service instance
 func NewAuthService(repo AuthRepository) AuthService {
 	return &AuthServiceImpl{Repo: repo}
 }
@@ -35,18 +32,19 @@ func (s *AuthServiceImpl) Signup(username, email, password, role string) error {
 	}
 
 	return s.Repo.CreateUser(username, email, string(hashedPassword), role)
+
 }
 
-// Login authenticates a user and returns a JWT token
-func (s *AuthServiceImpl) Login(email, password string) (string, error) {
+func (s *AuthServiceImpl) Authenticate(email, role, password string) (*User, error) {
 	user, err := s.Repo.GetUserByEmail(email)
 	if err != nil {
-		return "", err
+		return nil, errors.New("user not found")
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return "", errors.New("invalid email or password")
+	err1 := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err1 != nil {
+		return nil, errors.New("invalid password")
 	}
 
-	return middleware.GenerateToken(user.Email, user.Role)
+	return user, nil
 }

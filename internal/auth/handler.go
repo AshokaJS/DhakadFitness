@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
 )
 
 type AuthRequest struct {
@@ -13,9 +15,18 @@ type AuthRequest struct {
 	Role     string `json:"role"`
 }
 
-// var AuthService1 AuthService
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
+}
 
 func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -35,9 +46,35 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 	json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
 }
 
-// func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
 
-// }
+	var req LoginRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	user, err := authService.Authenticate(req.Email, req.Role, req.Password)
+	if err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := middleware.GenerateToken(user.Email, user.Role)
+	if err != nil {
+		http.Error(w, "failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully"})
+	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+
+}
 
 // func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -7,10 +7,12 @@ import (
 )
 
 func SetupRoutes(authService auth.AuthService) {
-	http.HandleFunc("/auth/signup", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(" /auth/signup", func(w http.ResponseWriter, r *http.Request) {
 		auth.SignupHandler(w, r, authService)
 	})
-	// http.HandleFunc("/auth/login", auth.LoginHandler)
+	http.HandleFunc("/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		auth.LoginHandler(w, r, authService)
+	})
 	// http.HandleFunc("/auth/logout", auth.LogoutHandler)
 
 	// // user ke endpoints
@@ -35,6 +37,6 @@ func SetupRoutes(authService auth.AuthService) {
 
 	// Health Check Route
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Gym API is running!"))
+		w.Write([]byte("Gym API is running"))
 	})
 }
