@@ -7,6 +7,7 @@ import (
 
 	"github.com/AshokaJS/DhakadFitness/config"
 	"github.com/AshokaJS/DhakadFitness/internal/auth"
+	"github.com/AshokaJS/DhakadFitness/internal/user"
 	"github.com/AshokaJS/DhakadFitness/pkg/db"
 	"github.com/AshokaJS/DhakadFitness/routes"
 )
@@ -20,7 +21,10 @@ func main() {
 	authRepo := auth.NewAuthRepository(db.DB) // Ensure the db connection is passed correctly
 	authService := auth.NewAuthService(authRepo)
 
-	routes.SetupRoutes(authService)
+	userRepo := user.NewUserRepository(db.DB)
+	userService := user.NewUserService(userRepo)
+
+	routes.SetupRoutes(authService, userService)
 	// Start the HTTP server on port 8080
 	port := ":8080"
 	fmt.Println("Server started on", port)
