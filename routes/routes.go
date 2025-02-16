@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/AshokaJS/DhakadFitness/internal/auth"
+	"github.com/AshokaJS/DhakadFitness/internal/user"
 )
 
-func SetupRoutes(authService auth.AuthService) {
+func SetupRoutes(authService auth.AuthService, userService user.UserService) {
 	http.HandleFunc(" /auth/signup", func(w http.ResponseWriter, r *http.Request) {
 		auth.SignupHandler(w, r, authService)
 	})
@@ -15,17 +16,19 @@ func SetupRoutes(authService auth.AuthService) {
 	})
 	// http.HandleFunc("/auth/logout", auth.LogoutHandler)
 
-	// // user ke endpoints
-	// http.HandleFunc("/user/profile", user.ProfileHandler)
-	// http.HandleFunc("/user/update", user.ProfileUpdateHandler)
-	// http.HandleFunc("/user/wallet", user.GetWalletBalanceHandler)
-	// //yaha gym search wala handler likhna hai yaad se likh dena
-	// // http.HandleFunc("user/membership",user.MembershipHandler)
-	// http.HandleFunc("/memberships/buy", user.BuyMembershipHandler)
-	// http.HandleFunc("/memberships/user", user.GetUserMembershipsHandler)
-	// http.HandleFunc("/memberships/scheduled", user.GetScheduledMembershipsHandler)
-	// http.HandleFunc("/user/membership/:membershipID", user.DeleteMembershipHandler)
-	// http.HandleFunc("/user/gyms", user.AccessibleGymHandler)
+	// user ke endpoints
+
+	http.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
+		user.ProfileHandler(w, r, userService)
+	})
+	http.HandleFunc("/user/update", user.ProfileUpdateHandler)
+	http.HandleFunc("/user/wallet", user.WalletBalanceHandler)
+	http.HandleFunc("/user/gyms?like=gold", user.GymSearchHandler)
+	http.HandleFunc("user/membership", user.ActiveMembershipHandler)
+	http.HandleFunc("/memberships/buy", user.PurchaseMembershipHandler)
+	http.HandleFunc("/memberships/user", user.ViewAllMembershipHandler)
+	http.HandleFunc("/memberships/scheduled", user.CancelMembershipHandler)
+	http.HandleFunc("/user/gyms", user.AccessibleGymHandler)
 
 	// //gym ke endpoints
 	// http.HandleFunc("gym/:gymID", gym.ProfileGymHandler)

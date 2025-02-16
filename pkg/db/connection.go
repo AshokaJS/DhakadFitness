@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	// "os"
-
-	// "github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 
 	"github.com/AshokaJS/DhakadFitness/config"
@@ -31,7 +28,7 @@ func ConnectDB() {
 	}
 
 	// Checking the connection
-	err = db.Ping() // ye test query bhejega to check the connection is actually working or not.
+	err = db.Ping()
 	if err != nil {
 		log.Fatalf("Database connection failed: %s", err)
 	}

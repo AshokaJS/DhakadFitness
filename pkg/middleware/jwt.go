@@ -10,16 +10,18 @@ import (
 
 // Claims represents JWT claims
 type Claims struct {
+	UserId    int
 	UserEmail string `json:"userEmail"`
 	Role      string `json:"role"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken creates a JWT token for a user
-func GenerateToken(userEmail string, role string) (string, error) {
+func GenerateToken(userId int, userEmail string, role string) (string, error) {
 	secret := config.GetEnv("JWT_SECRET")
 
 	claims := Claims{
+		UserId:    userId,
 		UserEmail: userEmail,
 		Role:      role,
 		RegisteredClaims: jwt.RegisteredClaims{

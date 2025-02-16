@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,13 +32,18 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
+
+	ctx := context.Background()
+
+	ctx = context.WithValue(ctx, "X-Request-ID", r.Header.Get("X-Request-ID"))
+
 	var req AuthRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 	}
 
-	err1 := authService.Signup(req.Username, req.Email, req.Password, req.Role)
+	err1 := authService.Signup(ctx, req.Username, req.Email, req.Password, req.Role)
 	if err1 != nil {
 		fmt.Println(err1)
 		return
@@ -51,6 +57,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 
+	ctx := context.Background()
+
+	ctx = context.WithValue(ctx, "X-Request-ID", r.Header.Get("X-Request-ID"))
+
 	var req LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -58,13 +68,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 		return
 	}
 
-	user, err := authService.Authenticate(req.Email, req.Role, req.Password)
+	user, err := authService.Authenticate(ctx, req.Email, req.Role, req.Password)
 	if err != nil {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
-	token, err := middleware.GenerateToken(user.Email, user.Role)
+	token, err := middleware.GenerateToken(user.ID, user.Email, user.Role)
 	if err != nil {
 		http.Error(w, "failed to generate token", http.StatusInternalServerError)
 		return
@@ -75,7 +85,3 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 
 }
-
-// func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-
-// }

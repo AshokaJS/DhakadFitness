@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -14,8 +15,8 @@ type User struct {
 	Role     string
 }
 type AuthRepository interface {
-	CreateUser(username, email, password, role string) error
-	GetUserByEmail(email string) (*User, error)
+	CreateUser(ctx context.Context, username, email, password, role string) error
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 }
 
 type AuthRepoImpl struct {
@@ -27,7 +28,7 @@ func NewAuthRepository(db *sql.DB) AuthRepository {
 }
 
 // CreateUser inserts a new user into the database
-func (repo *AuthRepoImpl) CreateUser(username, email, password, role string) error {
+func (repo *AuthRepoImpl) CreateUser(ctx context.Context, username, email, password, role string) error {
 	_, err := repo.DB.Exec("INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)", username, email, password, role)
 	if err != nil {
 		log.Printf("Failed to create user: %v", err)
@@ -36,7 +37,7 @@ func (repo *AuthRepoImpl) CreateUser(username, email, password, role string) err
 	return nil
 }
 
-func (repo *AuthRepoImpl) GetUserByEmail(email string) (*User, error) {
+func (repo *AuthRepoImpl) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
 	err := repo.DB.QueryRow("SELECT id, name, email, password, role FROM users WHERE email=$1", email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role)
 

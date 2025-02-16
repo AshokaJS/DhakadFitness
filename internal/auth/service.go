@@ -1,14 +1,15 @@
 package auth
 
 import (
+	"context"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService interface {
-	Signup(username, email, password, role string) error
-	Authenticate(email, role, password string) (*User, error)
+	Signup(ctx context.Context, username, email, password, role string) error
+	Authenticate(ctx context.Context, email, role, password string) (*User, error)
 }
 
 type AuthServiceImpl struct {
@@ -21,22 +22,21 @@ func NewAuthService(repo AuthRepository) AuthService {
 }
 
 // Signup registers a new user
-func (s *AuthServiceImpl) Signup(username, email, password, role string) error {
+func (s *AuthServiceImpl) Signup(ctx context.Context, username, email, password, role string) error {
 	if email == "" || password == "" || (role != "GymUser" && role != "GymOwner") {
 		return errors.New("invalid input")
 	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.New("error hashing password")
 	}
 
-	return s.Repo.CreateUser(username, email, string(hashedPassword), role)
+	return s.Repo.CreateUser(ctx, username, email, string(hashedPassword), role)
 
 }
 
-func (s *AuthServiceImpl) Authenticate(email, role, password string) (*User, error) {
-	user, err := s.Repo.GetUserByEmail(email)
+func (s *AuthServiceImpl) Authenticate(ctx context.Context, email, role, password string) (*User, error) {
+	user, err := s.Repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("user not found")
 	}
