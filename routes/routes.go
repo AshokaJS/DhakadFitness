@@ -21,7 +21,9 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService) {
 	http.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
 		user.ProfileHandler(w, r, userService)
 	})
-	http.HandleFunc("/user/update", user.ProfileUpdateHandler)
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		user.ProfileUpdateHandler(w, r, userService)
+	})
 	http.HandleFunc("/user/wallet", user.WalletBalanceHandler)
 	http.HandleFunc("/user/gyms?like=gold", user.GymSearchHandler)
 	http.HandleFunc("user/membership", user.ActiveMembershipHandler)

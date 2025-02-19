@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
+	"github.com/google/uuid"
 )
 
 type AuthRequest struct {
@@ -33,9 +34,14 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 		return
 	}
 
-	ctx := context.Background()
+	ctx := r.Context()
+	_, ok := ctx.Value("request-id").(string)
 
-	ctx = context.WithValue(ctx, "X-Request-ID", r.Header.Get("X-Request-ID"))
+	if !ok {
+		//if value is not found in the request context then we have to create new value.
+		rid := uuid.New()
+		ctx = context.WithValue(ctx, "request-id", rid)
+	}
 
 	var req AuthRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -57,9 +63,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 
-	ctx := context.Background()
+	ctx := r.Context()
+	_, ok := ctx.Value("request-id").(string)
 
-	ctx = context.WithValue(ctx, "X-Request-ID", r.Header.Get("X-Request-ID"))
+	if !ok {
+		rid := uuid.New()
+		ctx = context.WithValue(ctx, "request-id", rid)
+	}
 
 	var req LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

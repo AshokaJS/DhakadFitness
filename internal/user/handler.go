@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,8 +41,43 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request, userService UserServ
 	json.NewEncoder(w).Encode(user)
 }
 
-func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	//
+func ProfileUpdateHandler(w http.ResponseWriter, r *http.Request, userService UserService) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+	var rUser User
+	err := json.NewDecoder(r.Body).Decode(&rUser)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
+		return
+	}
+
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := middleware.ValidateToken(tokenStr)
+	if err != nil {
+		http.Error(w, "invalid token", http.StatusInternalServerError)
+		return
+	}
+
+	userId := claims.UserId
+
+	user, err := userService.UpdateProfile(userId, rUser)
+	if err != nil {
+		http.Error(w, "failed to update the profile", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "updated profile is \n")
+	json.NewEncoder(w).Encode(user)
+
 }
 
 func WalletBalanceHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,24 +107,3 @@ func CancelMembershipHandler(w http.ResponseWriter, r *http.Request) {
 func AccessibleGymHandler(w http.ResponseWriter, r *http.Request) {
 	//
 }
-
-// func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
-
-// 	if r.Method != http.MethodPost {
-// 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	var req AuthRequest
-// 	err := json.NewDecoder(r.Body).Decode(&req)
-// 	if err != nil {
-// 		http.Error(w, "Invalid request", http.StatusBadRequest)
-// 	}
-
-// 	err1 := authService.Signup(req.Username, req.Email, req.Password, req.Role)
-// 	if err1 != nil {
-// 		fmt.Println(err1)
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusCreated)
-// 	json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
-// }

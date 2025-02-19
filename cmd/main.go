@@ -18,7 +18,7 @@ func main() {
 	// Connect to the database
 	db.ConnectDB()
 
-	authRepo := auth.NewAuthRepository(db.DB) // Ensure the db connection is passed correctly
+	authRepo := auth.NewAuthRepository(db.DB)
 	authService := auth.NewAuthService(authRepo)
 
 	userRepo := user.NewUserRepository(db.DB)
@@ -33,8 +33,3 @@ func main() {
 		log.Fatalf("Failed to start server: %s", err)
 	}
 }
-
-// func dbhandler(w http.ResponseWriter, r *http.Request) {
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte("Server is running!"))
-// }
