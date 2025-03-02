@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/AshokaJS/DhakadFitness/internal/auth"
+	"github.com/AshokaJS/DhakadFitness/internal/gym"
 	"github.com/AshokaJS/DhakadFitness/internal/user"
 )
 
-func SetupRoutes(authService auth.AuthService, userService user.UserService) {
-	http.HandleFunc(" /auth/signup", func(w http.ResponseWriter, r *http.Request) {
+func SetupRoutes(authService auth.AuthService, userService user.UserService, gymService gym.GymService) {
+	http.HandleFunc("/auth/signup", func(w http.ResponseWriter, r *http.Request) {
 		auth.SignupHandler(w, r, authService)
 	})
 	http.HandleFunc("/auth/login", func(w http.ResponseWriter, r *http.Request) {
@@ -24,21 +25,38 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService) {
 	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
 		user.ProfileUpdateHandler(w, r, userService)
 	})
-	http.HandleFunc("/user/wallet", user.WalletBalanceHandler)
-	http.HandleFunc("/user/gyms?like=gold", user.GymSearchHandler)
-	http.HandleFunc("user/membership", user.ActiveMembershipHandler)
-	http.HandleFunc("/memberships/buy", user.PurchaseMembershipHandler)
-	http.HandleFunc("/memberships/user", user.ViewAllMembershipHandler)
-	http.HandleFunc("/memberships/scheduled", user.CancelMembershipHandler)
-	http.HandleFunc("/user/gyms", user.AccessibleGymHandler)
+
+	http.HandleFunc("/user/wallet", func(w http.ResponseWriter, r *http.Request) {
+		user.WalletBalanceHandler(w, r, userService)
+	})
+
+	http.HandleFunc("/user/gyms?pincode=", func(w http.ResponseWriter, r *http.Request) {
+		user.GymSearchHandler(w, r, userService)
+	})
+	http.HandleFunc("/user/membership", func(w http.ResponseWriter, r *http.Request) {
+		user.ActiveMembershipHandler(w, r, userService)
+	})
+
+	http.HandleFunc("/user/plan", func(w http.ResponseWriter, r *http.Request) {
+		user.PurchaseMembershipHandler(w, r, userService)
+	})
 
 	// //gym ke endpoints
-	// http.HandleFunc("gym/:gymID", gym.ProfileGymHandler)
-	// http.HandleFunc("gym/create", gym.ProfileCreateHandler)
-	// http.HandleFunc("gym/update/:gymID", gym.ProfileUpdadteHandler)
-	// http.HandleFunc("/gym/:gym_id/plans", gym.GymPlansHandler)
-	// http.HandleFunc("gym/:gymID/plans/:planID", gym.DeletePlanHandler)
-	// http.HandleFunc("gym/:gymID/plans/:planID", gym.UpdatePlanHandler)
+
+	http.HandleFunc("/gym/id/", func(w http.ResponseWriter, r *http.Request) {
+		gym.GymProfileHandler(w, r, gymService)
+	})
+	http.HandleFunc("/gym/create", func(w http.ResponseWriter, r *http.Request) {
+		gym.GymProfileCreateHandler(w, r, gymService)
+	})
+
+	http.HandleFunc("/gym/addplan", func(w http.ResponseWriter, r *http.Request) {
+		gym.GymPlansHandler(w, r, gymService)
+	})
+
+	http.HandleFunc("/gym/plan", func(w http.ResponseWriter, r *http.Request) {
+		gym.DeletePlanHandler(w, r, gymService)
+	})
 
 	// Health Check Route
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

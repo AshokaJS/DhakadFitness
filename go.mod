@@ -13,5 +13,3 @@ require (
 )
 
 require github.com/google/uuid v1.6.0 // direct
-
-// require golang.org/x/crypto/bcrypt

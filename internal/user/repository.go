@@ -3,7 +3,27 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"log"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
+
+type GetGym struct {
+	Id               int
+	Owner            string
+	Name             string
+	Branch_id        string
+	Location_Pincode int
+}
+type BuyPlan struct {
+	Id                   int
+	Gym_id               int
+	Membership_Type      string
+	Duration             string
+	Price                int
+	Scheduled_Start_Date time.Time
+}
 
 type User struct {
 	ID       int
@@ -12,9 +32,36 @@ type User struct {
 	Password string
 	Role     string
 }
+
+type Wallet struct {
+	UserId  int
+	Balance int
+}
+
+type Membership struct {
+	Id                   string
+	User_Id              int
+	Gym_Id               int
+	Plan_Id              int
+	Scheduled_Start_Date int64
+	Start_Date           int64
+	End_Date             int64
+	Membership_Type      string
+	Gym_name             string
+}
+
+type Branches struct {
+	Id               string
+	location_Pincode int
+}
+
 type UserRepository interface {
 	GetUserbyId(id int) (*User, error)
 	UpdateUserProfile(id int, rUser User) (*User, error)
+	UserWalletBalance(id int) (*Wallet, error)
+	UserActiveMemebrship(id int) (*Membership, *[]Branches, error)
+	SearchGymsByPincode(code int) (*[]GetGym, error)
+	BuyMembership(userId int, plan *BuyPlan) error
 }
 
 type UserRepoImpl struct {
@@ -56,7 +103,16 @@ func (r *UserRepoImpl) UpdateUserProfile(id int, rUser User) (*User, error) {
 		rUser.Name = user.Name
 	}
 	if rUser.Email == "" {
-		rUser.Role = user.Role
+		rUser.Email = user.Email
+	}
+	if rUser.Password == "" {
+		rUser.Password = user.Password
+	} else {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rUser.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, errors.New("error hashing new password")
+		}
+		rUser.Password = string(hashedPassword)
 	}
 	if rUser.Role == "" {
 		rUser.Role = user.Role
@@ -74,4 +130,83 @@ func (r *UserRepoImpl) UpdateUserProfile(id int, rUser User) (*User, error) {
 	}
 	return &rUser, nil
 
+}
+
+func (r *UserRepoImpl) UserWalletBalance(id int) (*Wallet, error) {
+	var w Wallet
+	err := r.DB.QueryRow("SELECT * FROM wallet WHERE id=$1", id).Scan(&w.UserId, &w.Balance)
+	if err != nil {
+		return nil, errors.New("unable to fetch user wallet balance")
+	}
+	return &w, nil
+}
+
+func (r *UserRepoImpl) UserActiveMemebrship(id int) (*Membership, *[]Branches, error) {
+	var m Membership
+	curr_date := time.Now().Unix()
+	err := r.DB.QueryRow("SELECT * FROM memberships WHERE user_id=$1 And start_date<=$2 And end_date>=$2", id, curr_date, curr_date).Scan(&m.Id, &m.User_Id, &m.Gym_Id, &m.Plan_Id, &m.Scheduled_Start_Date, &m.Start_Date, &m.End_Date)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil, errors.New("no active membership found")
+		}
+		return nil, nil, errors.New("unable to fetch active user memberships")
+	}
+
+	err = r.DB.QueryRow("SELECT membership_type FROM gym_plans WHERE id=$1", m.Plan_Id).Scan(&m.Membership_Type)
+	if err != nil {
+		return nil, nil, errors.New("unable to fetch type of membership")
+	}
+	err = r.DB.QueryRow("SELECT name FROM gyms WHERE id=$1", m.Gym_Id).Scan(&m.Gym_name)
+
+	if err != nil {
+		return nil, nil, errors.New("unable to fetch gym name")
+	}
+
+	var b []Branches
+	if m.Membership_Type == "Global" {
+		branchs, err := r.DB.Query("SELECT branch_id, location_pincode FROM branches WHERE gym_id=$1", m.Gym_Id)
+		if err != nil {
+			return nil, nil, errors.New("unable to fetch branches")
+		}
+		for branchs.Next() {
+			var branch Branches
+			if err := branchs.Scan(&branch.Id, &branch.location_Pincode); err != nil {
+				log.Fatal(err)
+			}
+			b = append(b, branch)
+		}
+		return &m, &b, nil
+	} else {
+		return &m, nil, nil
+	}
+
+}
+
+func (r *UserRepoImpl) SearchGymsByPincode(code int) (*[]GetGym, error) {
+	rows, err := r.DB.Query("SELECT gyms.id, gyms.owner, gyms.name, branches.branch_id, branches.location_pincode FROM gyms JOIN branches ON gyms.id=branches.gym_id WHERE branches.location_pincode BETWEEN $1 - 10 AND $1 + 10", code)
+	if err != nil {
+		return nil, errors.New("unable to fetch gyms")
+	}
+
+	var gyms []GetGym
+
+	for rows.Next() {
+		var gym GetGym
+		if err := rows.Scan(&gym.Id, &gym.Owner, &gym.Name, &gym.Branch_id, &gym.Location_Pincode); err != nil {
+			return nil, err
+		}
+		gyms = append(gyms, gym)
+	}
+	return &gyms, nil
+}
+
+func (r *UserRepoImpl) BuyMembership(userId int, plan *BuyPlan) error {
+	date := (plan.Scheduled_Start_Date)
+	new_date := date.Unix() //it is start date in Unix()
+	end_d := date.AddDate(0, 0, 30)
+	end_date := end_d.Unix() // it is end date in unix()
+	_, err := r.DB.Exec("INSERT INTO memberships (user_id, gym_id,plan_id,scheduled_start_date,start_date,end_date) VALUES ($1, $2, $3, $4)", userId, plan.Gym_id, plan.Id, new_date, new_date, end_date)
+
+	return err
 }

@@ -20,7 +20,7 @@ type AuthRepository interface {
 }
 
 type AuthRepoImpl struct {
-	DB *sql.DB /// ye variable hi hame database se connection provide kr raha hai for insertion etc.
+	DB *sql.DB
 }
 
 func NewAuthRepository(db *sql.DB) AuthRepository {
