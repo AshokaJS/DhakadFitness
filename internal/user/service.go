@@ -53,7 +53,7 @@ func (s *UserServiceImpl) GetActiveMembership(id int) (*Membership, *[]Branches,
 		if errors.Is(err, errors.New("no active membership found")) {
 			return nil, nil, errors.New("no active membership found")
 		}
-		return nil, nil, errors.New("unable to fetch user membership")
+		return nil, nil, err
 	}
 
 	return membership, branches, nil

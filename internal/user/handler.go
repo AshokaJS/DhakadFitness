@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -128,14 +129,16 @@ func ActiveMembershipHandler(w http.ResponseWriter, r *http.Request, userService
 	membership, branches, err := userService.GetActiveMembership(userId)
 
 	if err != nil {
-		http.Error(w, "failed to fetch user memebership", http.StatusInternalServerError)
+		if errors.Is(err, errors.New("no active membership found")) {
+			http.Error(w, "no active membership found ", http.StatusInternalServerError)
+			return
+		}
+		http.Error(w, "failed to fetch user's active memberhsip", http.StatusInternalServerError)
 		return
 	}
 
 	fmt.Fprint(w, "membership of the user : \n")
 	json.NewEncoder(w).Encode(membership)
-
-	// var m = make(map[int]interface{})
 
 	fmt.Fprint(w, "branches if the membership is global : \n")
 	json.NewEncoder(w).Encode(branches)
@@ -162,7 +165,8 @@ func PurchaseMembershipHandler(w http.ResponseWriter, r *http.Request, userServi
 
 	err = userService.PurchaseGymPlan(userId, &plan)
 	if err != nil {
-		http.Error(w, "unable to purchase gym membership", http.StatusOK)
+		http.Error(w, "unable to purchase gym membership", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)

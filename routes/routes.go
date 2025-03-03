@@ -30,7 +30,7 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService, gym
 		user.WalletBalanceHandler(w, r, userService)
 	})
 
-	http.HandleFunc("/user/gyms?pincode=", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/user/gyms", func(w http.ResponseWriter, r *http.Request) {
 		user.GymSearchHandler(w, r, userService)
 	})
 	http.HandleFunc("/user/membership", func(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +54,7 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService, gym
 		gym.GymPlansHandler(w, r, gymService)
 	})
 
-	http.HandleFunc("/gym/plan", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/gym/plan/", func(w http.ResponseWriter, r *http.Request) {
 		gym.DeletePlanHandler(w, r, gymService)
 	})
 

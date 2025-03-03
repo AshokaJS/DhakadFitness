@@ -144,13 +144,13 @@ func (r *UserRepoImpl) UserWalletBalance(id int) (*Wallet, error) {
 func (r *UserRepoImpl) UserActiveMemebrship(id int) (*Membership, *[]Branches, error) {
 	var m Membership
 	curr_date := time.Now().Unix()
-	err := r.DB.QueryRow("SELECT * FROM memberships WHERE user_id=$1 And start_date<=$2 And end_date>=$2", id, curr_date, curr_date).Scan(&m.Id, &m.User_Id, &m.Gym_Id, &m.Plan_Id, &m.Scheduled_Start_Date, &m.Start_Date, &m.End_Date)
+	err := r.DB.QueryRow("SELECT id, user_id, gym_id, plan_id, scheduled_start_date, start_date, end_date FROM memberships WHERE user_id=$1 And start_date<=$2 And end_date>=$3", id, curr_date, curr_date).Scan(&m.Id, &m.User_Id, &m.Gym_Id, &m.Plan_Id, &m.Scheduled_Start_Date, &m.Start_Date, &m.End_Date)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil, errors.New("no active membership found")
 		}
-		return nil, nil, errors.New("unable to fetch active user memberships")
+		return nil, nil, errors.New("unable to fetch user membership")
 	}
 
 	err = r.DB.QueryRow("SELECT membership_type FROM gym_plans WHERE id=$1", m.Plan_Id).Scan(&m.Membership_Type)
@@ -206,7 +206,7 @@ func (r *UserRepoImpl) BuyMembership(userId int, plan *BuyPlan) error {
 	new_date := date.Unix() //it is start date in Unix()
 	end_d := date.AddDate(0, 0, 30)
 	end_date := end_d.Unix() // it is end date in unix()
-	_, err := r.DB.Exec("INSERT INTO memberships (user_id, gym_id,plan_id,scheduled_start_date,start_date,end_date) VALUES ($1, $2, $3, $4)", userId, plan.Gym_id, plan.Id, new_date, new_date, end_date)
+	_, err := r.DB.Exec("INSERT INTO memberships (user_id, gym_id,plan_id,scheduled_start_date,start_date,end_date) VALUES ($1, $2, $3, $4, $5, $6)", userId, plan.Gym_id, plan.Id, new_date, new_date, end_date)
 
 	return err
 }

@@ -168,5 +168,5 @@ func DeletePlanHandler(w http.ResponseWriter, r *http.Request, gymService GymSer
 	}
 
 	w.WriteHeader(http.StatusOK)
-
+	fmt.Fprint(w, "gym plan deleted sucessfully")
 }
