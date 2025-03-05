@@ -7,13 +7,7 @@ import (
 	"log"
 )
 
-type User struct {
-	ID       int
-	Username string
-	Email    string
-	Password string
-	Role     string
-}
+
 type AuthRepository interface {
 	CreateUser(ctx context.Context, username, email, password, role string) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)

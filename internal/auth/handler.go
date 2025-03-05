@@ -2,29 +2,13 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
-type AuthRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	Token string `json:"token"`
-}
 
 func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
 
@@ -39,11 +23,16 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
 
-	err1 := authService.Signup(ctx, req.Username, req.Email, req.Password, req.Role)
-	if err1 != nil {
-		fmt.Println(err1)
+	err = authService.Signup(ctx, req.Username, req.Email, req.Password, req.Role)
+	if err != nil {
+		if errors.Is(err, ErrInvalidEmail) {
+			http.Error(w, "enter correct email", http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "invalid input", http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

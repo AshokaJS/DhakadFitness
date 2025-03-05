@@ -6,14 +6,6 @@ import (
 	"fmt"
 )
 
-type GetGym struct {
-	Id               int
-	Owner            string
-	Name             string
-	Branch_id        string
-	Location_Pincode int
-}
-
 type GymRepository interface {
 	GetGymProfile(gymId int) (*[]GetGym, error)
 	CreateGym(gym *GymStruct) (string, error)

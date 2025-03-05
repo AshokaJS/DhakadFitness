@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,10 +22,15 @@ func NewAuthService(repo AuthRepository) AuthService {
 	return &AuthServiceImpl{Repo: repo}
 }
 
+var ErrInvalidEmail = errors.New("invalid email")
+
 // Signup registers a new user
 func (s *AuthServiceImpl) Signup(ctx context.Context, username, email, password, role string) error {
 	if email == "" || password == "" || (role != "GymUser" && role != "GymOwner") {
 		return errors.New("invalid input")
+	}
+	if !strings.Contains(email, "@") {
+		return ErrInvalidEmail
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

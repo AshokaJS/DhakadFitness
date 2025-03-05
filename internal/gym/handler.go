@@ -10,22 +10,6 @@ import (
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
-type GymStruct struct {
-	Id               int    `json:"id"`
-	Owner            string `json:"owner"`
-	Name             string `json:"name"`
-	Branch_Id        int    `json:"branch_id"`
-	Location_Pincode int    `json:"pincode"`
-}
-
-type Plan struct {
-	Id              int    `json:"id"`
-	Gym_id          int    `json:"gym_id"`
-	Membership_Type string `json:"membership_type"`
-	Duration        string `json:"duration"`
-	Price           int    `json:"price"`
-	// Scheduled_Start_Date time.Time `json:"start_date"`  // required only when purchase
-}
 
 func GymProfileHandler(w http.ResponseWriter, r *http.Request, gymService GymService) {
 	if r.Method != http.MethodGet {
