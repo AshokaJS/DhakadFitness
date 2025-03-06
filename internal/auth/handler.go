@@ -9,7 +9,6 @@ import (
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
-
 func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
 
 	if r.Method != http.MethodPost {
@@ -66,7 +65,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully"})
-	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully", "Token": token})
+	// json.NewEncoder(w).Encode(LoginResponse{Token: token})
 
 }
