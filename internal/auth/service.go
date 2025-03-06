@@ -23,6 +23,7 @@ func NewAuthService(repo AuthRepository) AuthService {
 }
 
 var ErrInvalidEmail = errors.New("invalid email")
+var ErrUsrEmailPresent = errors.New("user with this email is already present in the database")
 
 // Signup registers a new user
 func (s *AuthServiceImpl) Signup(ctx context.Context, username, email, password, role string) error {
@@ -31,6 +32,10 @@ func (s *AuthServiceImpl) Signup(ctx context.Context, username, email, password,
 	}
 	if !strings.Contains(email, "@") {
 		return ErrInvalidEmail
+	}
+	_, err := s.Repo.GetUserByEmail(ctx, email)
+	if err == nil {
+		return ErrUsrEmailPresent
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

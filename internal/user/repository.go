@@ -88,7 +88,7 @@ func (r *UserRepoImpl) UpdateUserProfile(id int, rUser User) (*User, error) {
 
 func (r *UserRepoImpl) UserWalletBalance(id int) (*Wallet, error) {
 	var w Wallet
-	err := r.DB.QueryRow("SELECT * FROM wallet WHERE id=$1", id).Scan(&w.UserId, &w.Balance)
+	err := r.DB.QueryRow("SELECT * FROM wallet WHERE user_id=$1", id).Scan(&w.UserId, &w.Balance)
 	if err != nil {
 		return nil, errors.New("unable to fetch user wallet balance")
 	}
@@ -156,11 +156,24 @@ func (r *UserRepoImpl) SearchGymsByPincode(code int) (*[]GetGym, error) {
 }
 
 func (r *UserRepoImpl) BuyMembership(userId int, plan *BuyPlan) error {
+	var balance int
+	err := r.DB.QueryRow("SELECT available_balance FROM wallet WHERE user_id=$1", userId).Scan(&balance)
+	if err != nil {
+		return errors.New("error in updating users wallet balance")
+	}
+	if balance < (plan.Price) {
+		return errors.New("wallet balance is low")
+	}
+	balance = balance - (plan.Price)
+	_, err = r.DB.Exec("UPDATE wallet SET available_balance = $1 WHERE user_id = $2", balance, userId)
+
+	if err != nil {
+		return errors.New("unable to buy membership")
+	}
 	date := (plan.Scheduled_Start_Date)
 	new_date := date.Unix() //it is start date in Unix()
 	end_d := date.AddDate(0, 0, 30)
 	end_date := end_d.Unix() // it is end date in unix()
-	_, err := r.DB.Exec("INSERT INTO memberships (user_id, gym_id,plan_id,scheduled_start_date,start_date,end_date) VALUES ($1, $2, $3, $4, $5, $6)", userId, plan.Gym_id, plan.Id, new_date, new_date, end_date)
-
+	_, err = r.DB.Exec("INSERT INTO memberships (user_id, gym_id,plan_id,scheduled_start_date,start_date,end_date) VALUES ($1, $2, $3, $4, $5, $6)", userId, plan.Gym_id, plan.Id, new_date, new_date, end_date)
 	return err
 }

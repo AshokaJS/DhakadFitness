@@ -28,11 +28,12 @@ func main() {
 	gymRepo := gym.NewGymRepository(db.DB)
 	gymService := gym.NewGymService(gymRepo)
 
-	routes.SetupRoutes(authService, userService, gymService)
+	handler := routes.SetupRoutes(authService, userService, gymService)
+
 	// Start the HTTP server on port 8080
 	port := ":8080"
 	fmt.Println("Server started on", port)
-	err := http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, handler)
 	if err != nil {
 		log.Fatalf("Failed to start server: %s", err)
 	}

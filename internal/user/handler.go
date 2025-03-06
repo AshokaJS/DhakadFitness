@@ -165,6 +165,7 @@ func PurchaseMembershipHandler(w http.ResponseWriter, r *http.Request, userServi
 
 	err = userService.PurchaseGymPlan(userId, &plan)
 	if err != nil {
+		fmt.Fprint(w, err)
 		http.Error(w, "unable to purchase gym membership", http.StatusInternalServerError)
 		return
 	}

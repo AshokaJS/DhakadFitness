@@ -9,7 +9,6 @@ import (
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
-
 func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
 
 	if r.Method != http.MethodPost {
@@ -30,6 +29,10 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 	if err != nil {
 		if errors.Is(err, ErrInvalidEmail) {
 			http.Error(w, "enter correct email", http.StatusBadRequest)
+			return
+		}
+		if errors.Is(err, ErrUsrEmailPresent) {
+			http.Error(w, "user with this email is already present in the database", http.StatusBadRequest)
 			return
 		}
 		http.Error(w, "invalid input", http.StatusBadRequest)
@@ -66,7 +69,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully"})
-	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully", "Token": token})
+	// json.NewEncoder(w).Encode(LoginResponse{Token: token})
 
 }
