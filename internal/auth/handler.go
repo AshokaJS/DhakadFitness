@@ -31,6 +31,10 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 			http.Error(w, "enter correct email", http.StatusBadRequest)
 			return
 		}
+		if errors.Is(err, ErrUsrEmailPresent) {
+			http.Error(w, "user with this email is already present in the database", http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "invalid input", http.StatusBadRequest)
 		return
 	}
