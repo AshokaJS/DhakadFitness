@@ -27,8 +27,8 @@ type User struct {
 }
 
 type Wallet struct {
-	UserId  int
-	Balance int
+	UserId  int `json:"userId"`
+	Balance int `json:"balance"`
 }
 
 type Membership struct {

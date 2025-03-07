@@ -6,7 +6,7 @@ import (
 	"github.com/AshokaJS/DhakadFitness/internal/auth"
 	"github.com/AshokaJS/DhakadFitness/internal/gym"
 	"github.com/AshokaJS/DhakadFitness/internal/user"
-	"github.com/rs/cors"
+	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
 )
 
 func SetupRoutes(authService auth.AuthService, userService user.UserService, gymService gym.GymService) http.Handler {
@@ -67,6 +67,7 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService, gym
 		w.Write([]byte("Gym API is running"))
 	})
 
-	handler := cors.Default().Handler(mux)
+	// handler := cors.Default().Handler(mux)
+	handler := middleware.EnableCORS(mux)
 	return handler
 }

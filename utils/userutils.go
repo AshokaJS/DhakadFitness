@@ -17,6 +17,7 @@ func AuthentionUtil(w http.ResponseWriter, r *http.Request) (int, error) {
 
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 	claims, err := middleware.ValidateToken(tokenStr)
+
 	if err != nil {
 		err := errors.New("invalid token")
 		return 0, err

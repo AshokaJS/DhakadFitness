@@ -137,11 +137,8 @@ func ActiveMembershipHandler(w http.ResponseWriter, r *http.Request, userService
 		return
 	}
 
-	fmt.Fprint(w, "membership of the user : \n")
-	json.NewEncoder(w).Encode(membership)
-
-	fmt.Fprint(w, "branches if the membership is global : \n")
-	json.NewEncoder(w).Encode(branches)
+	json.NewEncoder(w).Encode(map[string]interface{}{"membership": membership, "branches": branches})
+	w.WriteHeader(http.StatusOK)
 }
 
 func PurchaseMembershipHandler(w http.ResponseWriter, r *http.Request, userService UserService) {

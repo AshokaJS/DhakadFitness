@@ -31,6 +31,7 @@ func main() {
 	handler := routes.SetupRoutes(authService, userService, gymService)
 
 	// Start the HTTP server on port 8080
+	
 	port := ":8080"
 	fmt.Println("Server started on", port)
 	err := http.ListenAndServe(port, handler)
