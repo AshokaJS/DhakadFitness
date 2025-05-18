@@ -1,4 +1,4 @@
-package auth
+package utils
 
 type AuthRequest struct {
 	Username string `json:"username"`

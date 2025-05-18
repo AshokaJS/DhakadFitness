@@ -1,4 +1,4 @@
-package gym
+package utils
 
 type GymStruct struct {
 	Id               int    `json:"id"`

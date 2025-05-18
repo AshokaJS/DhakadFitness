@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+
+	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
 type AuthRepository interface {
 	CreateUser(ctx context.Context, username, email, password, role string) error
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*utils.User, error)
 }
 
 type AuthRepoImpl struct {
@@ -44,8 +46,8 @@ func (repo *AuthRepoImpl) CreateUser(ctx context.Context, username, email, passw
 	return nil
 }
 
-func (repo *AuthRepoImpl) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	var user User
+func (repo *AuthRepoImpl) GetUserByEmail(ctx context.Context, email string) (*utils.User, error) {
+	var user utils.User
 	err := repo.DB.QueryRow("SELECT id, name, email, password, role FROM users WHERE email=$1", email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role)
 
 	if err != nil {

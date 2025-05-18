@@ -10,7 +10,6 @@ import (
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
-
 func GymProfileHandler(w http.ResponseWriter, r *http.Request, gymService GymService) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
@@ -60,7 +59,7 @@ func GymProfileCreateHandler(w http.ResponseWriter, r *http.Request, gymService 
 		return
 	}
 
-	var gym GymStruct
+	var gym utils.GymStruct
 
 	err = json.NewDecoder(r.Body).Decode(&gym)
 	if err != nil {
@@ -101,7 +100,7 @@ func GymPlansHandler(w http.ResponseWriter, r *http.Request, gymService GymServi
 		return
 	}
 
-	var plan Plan
+	var plan utils.Plan
 	err = json.NewDecoder(r.Body).Decode(&plan)
 	if err != nil {
 		http.Error(w, "unable to decode request body", http.StatusBadRequest)

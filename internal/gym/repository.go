@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
 type GymRepository interface {
-	GetGymProfile(gymId int) (*[]GetGym, error)
-	CreateGym(gym *GymStruct) (string, error)
-	AddPlan(plan Plan) (string, error)
+	GetGymProfile(gymId int) (*[]utils.GetGym, error)
+	CreateGym(gym *utils.GymStruct) (string, error)
+	AddPlan(plan utils.Plan) (string, error)
 	DeletePlan(planId int) error
 }
 
@@ -21,15 +23,15 @@ func NewGymRepository(db *sql.DB) GymRepository {
 	return &GymRepositoryImpl{DB: db}
 }
 
-func (r *GymRepositoryImpl) GetGymProfile(gymId int) (*[]GetGym, error) {
+func (r *GymRepositoryImpl) GetGymProfile(gymId int) (*[]utils.GetGym, error) {
 	rows, err := r.DB.Query("SELECT gyms.id, gyms.owner, gyms.name, branches.branch_id, branches.location_pincode FROM gyms JOIN branches ON gyms.id = branches.gym_id WHERE gyms.id = $1;", gymId)
-	var gyms []GetGym
+	var gyms []utils.GetGym
 	if err != nil {
 		return nil, errors.New("unable to fetch gym")
 	}
 
 	for rows.Next() {
-		var gym GetGym
+		var gym utils.GetGym
 		err = rows.Scan(&gym.Id, &gym.Owner, &gym.Name, &gym.Branch_id, &gym.Location_Pincode)
 		if err != nil {
 			return nil, errors.New("unable to fetch gym details")
@@ -41,7 +43,7 @@ func (r *GymRepositoryImpl) GetGymProfile(gymId int) (*[]GetGym, error) {
 
 }
 
-func (r *GymRepositoryImpl) CreateGym(gym *GymStruct) (string, error) {
+func (r *GymRepositoryImpl) CreateGym(gym *utils.GymStruct) (string, error) {
 
 	// var flag bool
 	flag := true
@@ -68,7 +70,7 @@ func (r *GymRepositoryImpl) CreateGym(gym *GymStruct) (string, error) {
 	return ok, nil
 }
 
-func (r *GymRepositoryImpl) AddPlan(plan Plan) (string, error) {
+func (r *GymRepositoryImpl) AddPlan(plan utils.Plan) (string, error) {
 	_, err := r.DB.Exec("INSERT INTO gym_plans (id, gym_id, membership_type, duration, price) VALUES ($1, $2, $3,$4,$5)", plan.Id, plan.Gym_id, plan.Membership_Type, plan.Duration, plan.Price)
 	if err != nil {
 		return " ", fmt.Errorf("error occured is : %v", err)

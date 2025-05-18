@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/AshokaJS/DhakadFitness/pkg/middleware"
@@ -18,7 +17,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 
 	ctx := utils.GetContext(r)
 
-	var req AuthRequest
+	var req utils.AuthRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -26,17 +25,10 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 	}
 
 	err = authService.Signup(ctx, req.Username, req.Email, req.Password, req.Role)
+
 	if err != nil {
-		if errors.Is(err, ErrInvalidEmail) {
-			http.Error(w, "enter correct email", http.StatusBadRequest)
-			return
-		}
-		if errors.Is(err, ErrUsrEmailPresent) {
-			http.Error(w, "user with this email is already present in the database", http.StatusBadRequest)
-			return
-		}
-		http.Error(w, "invalid input", http.StatusBadRequest)
-		return
+		s := err.Error()
+		http.Error(w, s, http.StatusBadRequest)
 	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
@@ -49,7 +41,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 
 	ctx := utils.GetContext(r)
 
-	var req LoginRequest
+	var req utils.LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -70,6 +62,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, authService AuthServic
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "user logged in successfully", "Token": token})
-	// json.NewEncoder(w).Encode(LoginResponse{Token: token})
 
 }

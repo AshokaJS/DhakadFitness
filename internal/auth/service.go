@@ -5,12 +5,13 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/AshokaJS/DhakadFitness/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService interface {
 	Signup(ctx context.Context, username, email, password, role string) error
-	Authenticate(ctx context.Context, email, role, password string) (*User, error)
+	Authenticate(ctx context.Context, email, role, password string) (*utils.User, error)
 }
 
 type AuthServiceImpl struct {
@@ -46,7 +47,7 @@ func (s *AuthServiceImpl) Signup(ctx context.Context, username, email, password,
 
 }
 
-func (s *AuthServiceImpl) Authenticate(ctx context.Context, email, role, password string) (*User, error) {
+func (s *AuthServiceImpl) Authenticate(ctx context.Context, email, role, password string) (*utils.User, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("user not found")
