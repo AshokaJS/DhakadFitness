@@ -47,10 +47,16 @@ func (r *GymRepositoryImpl) CreateGym(gym *utils.GymStruct) (string, error) {
 
 	// var flag bool
 	flag := true
-	ids, _ := r.DB.Query("SELECT id FROM gyms")
+	ids, err := r.DB.Query("SELECT id FROM gyms")
+	if err != nil {
+		return "", err
+	}
 	for ids.Next() {
 		var id int
-		_ = ids.Scan(&id)
+		err = ids.Scan(&id)
+		if err != nil {
+			return "", err
+		}
 		if id == gym.Id {
 			flag = false
 		}
@@ -62,7 +68,7 @@ func (r *GymRepositoryImpl) CreateGym(gym *utils.GymStruct) (string, error) {
 		}
 	}
 
-	_, err := r.DB.Exec("INSERT INTO branches (branch_id, gym_id,location_pincode) VALUES ($1, $2, $3)", gym.Branch_Id, gym.Id, gym.Location_Pincode)
+	_, err = r.DB.Exec("INSERT INTO branches (branch_id, gym_id,location_pincode) VALUES ($1, $2, $3)", gym.Branch_Id, gym.Id, gym.Location_Pincode)
 	if err != nil {
 		return "", fmt.Errorf("error occured is : %v", err)
 	}

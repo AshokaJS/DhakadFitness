@@ -8,6 +8,13 @@ import (
 	"github.com/AshokaJS/DhakadFitness/utils"
 )
 
+// func GetUserProfileHandler(authService AuthService) http.HandlerFunc {
+
+// 	return func(w http.ResponseWriter, r *http.Request) {
+
+// 	}
+// }
+
 func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthService) {
 
 	if r.Method != http.MethodPost {
@@ -29,6 +36,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request, authService AuthServi
 	if err != nil {
 		s := err.Error()
 		http.Error(w, s, http.StatusBadRequest)
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})

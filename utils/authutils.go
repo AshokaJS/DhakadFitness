@@ -18,3 +18,7 @@ func GetContext(r *http.Request) context.Context {
 	}
 	return ctx
 }
+
+// func slogger(ctx context.Context,s string){
+
+// }

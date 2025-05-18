@@ -9,6 +9,10 @@ type GymService interface {
 	DeletePlan(planId int) error
 }
 
+type ListResp struct {
+	GymProfiles *[]utils.GetGym `json:"gym_profiles"`
+}
+
 type GymServiceImpl struct {
 	Repo GymRepository
 }
@@ -18,7 +22,9 @@ func NewGymService(repo GymRepository) GymService {
 }
 
 func (s *GymServiceImpl) GetGymProfile(gymId int) (*[]utils.GetGym, error) {
-	return s.Repo.GetGymProfile(gymId)
+	resp := ListResp{}
+	resp.GymProfiles, _ = s.Repo.GetGymProfile(gymId)
+	return resp.GymProfiles, nil
 }
 
 func (s *GymServiceImpl) CreateGym(gym *utils.GymStruct) (string, error) {

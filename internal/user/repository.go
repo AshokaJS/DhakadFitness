@@ -3,7 +3,6 @@ package user
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -72,14 +71,14 @@ func (r *UserRepoImpl) UpdateUserProfile(id int, rUser User) (*User, error) {
 		rUser.Role = user.Role
 	}
 
-	_, err1 := r.DB.Exec("UPDATE users SET name=$1, email=$2, password=$3, role=$4 WHERE id=$5", rUser.Name, rUser.Email, rUser.Password, rUser.Role, rUser.ID)
+	_, err = r.DB.Exec("UPDATE users SET name=$1, email=$2, password=$3, role=$4 WHERE id=$5", rUser.Name, rUser.Email, rUser.Password, rUser.Role, rUser.ID)
 
-	if err1 != nil {
+	if err != nil {
 		return nil, errors.New("failed to update the user")
 	}
 
-	err2 := r.DB.QueryRow("SELECT users.name, users.email, users.password, users.role FROM users WHERE id=$1", rUser.ID).Scan(&rUser.Name, &rUser.Email, &rUser.Password, &rUser.Role)
-	if err2 != nil {
+	err = r.DB.QueryRow("SELECT users.name, users.email, users.password, users.role FROM users WHERE id=$1", rUser.ID).Scan(&rUser.Name, &rUser.Email, &rUser.Password, &rUser.Role)
+	if err != nil {
 		return nil, errors.New("failed to get details of updated user")
 	}
 	return &rUser, nil
@@ -125,8 +124,8 @@ func (r *UserRepoImpl) UserActiveMemebrship(id int) (*Membership, *[]Branches, e
 		}
 		for branchs.Next() {
 			var branch Branches
-			if err := branchs.Scan(&branch.Id, &branch.location_Pincode); err != nil {
-				log.Fatal(err)
+			if err = branchs.Scan(&branch.Id, &branch.location_Pincode); err != nil {
+				return nil, nil, err
 			}
 			b = append(b, branch)
 		}

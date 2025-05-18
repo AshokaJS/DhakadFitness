@@ -45,6 +45,7 @@ func SetupRoutes(authService auth.AuthService, userService user.UserService, gym
 		user.PurchaseMembershipHandler(w, r, userService)
 	})
 
+	// mux.HandleFunc("/user/plan/", auth.GetUserProfileHandler(authService 	))
 	// //gym ke endpoints
 
 	mux.HandleFunc("/gym/id/", func(w http.ResponseWriter, r *http.Request) {
